@@ -4,9 +4,14 @@ import {
     ChevronRight,
     Loader2,
     LogOut,
+    Moon,
     Plus,
     RefreshCw,
+    Rows2,
+    Rows3,
     Search,
+    Sun,
+    X,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -14,12 +19,15 @@ import {
     MetricsTable,
     type SortDirection,
     type SortKey,
+    type TableDensity,
 } from '@/components/dashboard/MetricsTable';
 import { DeleteInstanceDialog } from '@/components/instances/DeleteInstanceDialog';
 import { InstanceDrawer } from '@/components/instances/InstanceDrawer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useFieldmaRealtime } from '@/hooks/useFieldmaRealtime';
+import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
 import type {
     DashboardRow,
@@ -75,9 +83,11 @@ export default function Dashboard({
     rows: initialRows,
 }: DashboardProps) {
     const { auth, flash } = usePage<SharedPageProps>().props;
+    const { theme, toggleTheme } = useTheme();
     const [rows, setRows] = useState<DashboardRow[]>(initialRows);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+    const [density, setDensity] = useState<TableDensity>('comfortable');
     const [sortKey, setSortKey] = useState<SortKey>('name');
     const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -89,12 +99,10 @@ export default function Dashboard({
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const flashTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
-    // Keep local rows synchronized when Inertia navigates dates or reloads after CRUD
     useEffect(() => {
         setRows(initialRows);
     }, [initialRows]);
 
-    // Clean up all pending flash timers on unmount
     useEffect(() => {
         const timers = flashTimersRef.current;
         return () => {
@@ -322,31 +330,49 @@ export default function Dashboard({
     return (
         <>
             <Head title="Dashboard" />
-            <div className="flex h-screen flex-col bg-zinc-50 text-zinc-900">
-                <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-zinc-200 bg-white px-3">
-                    {/* Left: Title, Live Status, Date Stepper */}
-                    <div className="flex items-center gap-2.5">
-                        <span className="text-sm font-semibold tracking-tight text-zinc-900 whitespace-nowrap">
-                            FieldMA Monitor
-                        </span>
-
-                        <span className="h-4 w-px bg-zinc-200" aria-hidden="true" />
-
-                        <div className="flex items-center gap-1.5 text-xs text-zinc-600">
+            <div className="flex h-screen flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+                {/* Primary Top Bar */}
+                <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 dark:border-zinc-800 dark:bg-zinc-900">
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                             <span
-                                className={cn(
-                                    'h-2 w-2 rounded-full',
-                                    wsState === 'connected' && 'bg-emerald-500',
-                                    wsState === 'connecting' && 'bg-amber-500',
-                                    wsState === 'disconnected' && 'bg-rose-500',
-                                )}
+                                className="h-2.5 w-2.5 rounded-sm bg-zinc-900 dark:bg-zinc-100"
                                 aria-hidden="true"
                             />
-                            <span className="font-mono text-[11px]">{wsLabel}</span>
+                            <span className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
+                                FieldMA Central Monitor
+                            </span>
                         </div>
 
-                        <span className="h-4 w-px bg-zinc-200" aria-hidden="true" />
+                        <span className="h-4 w-px bg-zinc-200 dark:bg-zinc-800" aria-hidden="true" />
 
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-xs text-zinc-700 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300 cursor-default">
+                                    <span
+                                        className={cn(
+                                            'h-2 w-2 rounded-full',
+                                            wsState === 'connected' && 'bg-emerald-500',
+                                            wsState === 'connecting' && 'bg-amber-500',
+                                            wsState === 'disconnected' && 'bg-rose-500',
+                                        )}
+                                        aria-hidden="true"
+                                    />
+                                    <span className="font-mono text-[11px]">{wsLabel}</span>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {wsState === 'connected'
+                                    ? 'Connected to Laravel Reverb for live metric updates'
+                                    : wsState === 'connecting'
+                                      ? 'Reconnecting to Reverb WebSocket server...'
+                                      : 'WebSocket offline. Updates will resume automatically once Reverb is reachable.'}
+                            </TooltipContent>
+                        </Tooltip>
+
+                        <span className="h-4 w-px bg-zinc-200 dark:bg-zinc-800" aria-hidden="true" />
+
+                        {/* Date Selector */}
                         <div className="flex items-center gap-1">
                             <Button
                                 variant="secondary"
@@ -361,7 +387,7 @@ export default function Dashboard({
                                 value={selectedDate}
                                 max={today}
                                 onChange={(e) => e.target.value && navigateDate(e.target.value)}
-                                className="h-7 rounded-md border border-zinc-200 bg-white px-2 font-mono text-xs tabular-nums text-zinc-800 focus:border-zinc-400 focus:outline-none"
+                                className="h-7 rounded-md border border-zinc-200 bg-white px-2 font-mono text-xs tabular-nums text-zinc-800 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200 dark:focus:border-zinc-600"
                             />
                             <Button
                                 variant="secondary"
@@ -381,7 +407,7 @@ export default function Dashboard({
                                     >
                                         Today
                                     </Button>
-                                    <span className="hidden rounded-sm border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] text-zinc-600 xl:inline">
+                                    <span className="hidden rounded-sm border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] text-zinc-600 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300 xl:inline">
                                         Historical · Live Paused
                                     </span>
                                 </>
@@ -389,44 +415,8 @@ export default function Dashboard({
                         </div>
                     </div>
 
-                    {/* Right: Search, Status Pills, Actions */}
+                    {/* Right Utility Controls */}
                     <div className="flex items-center gap-2">
-                        <div className="relative w-48 xl:w-56">
-                            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
-                            <Input
-                                ref={searchInputRef}
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Filter instances... (/)"
-                                className="h-7 pl-8 text-xs"
-                            />
-                        </div>
-
-                        <div className="hidden items-center rounded-md border border-zinc-200 bg-zinc-50 p-0.5 text-[11px] lg:flex">
-                            {(
-                                [
-                                    ['all', `All (${statusCounts.all})`],
-                                    ['online', `Online (${statusCounts.online})`],
-                                    ['degraded', `Degraded (${statusCounts.degraded})`],
-                                    ['offline', `Offline (${statusCounts.offline})`],
-                                ] as const
-                            ).map(([key, label]) => (
-                                <button
-                                    key={key}
-                                    type="button"
-                                    onClick={() => setStatusFilter(key)}
-                                    className={cn(
-                                        'rounded-sm px-2 py-0.5 font-medium tabular-nums transition-colors cursor-pointer',
-                                        statusFilter === key
-                                            ? 'border border-zinc-200 bg-white text-zinc-900'
-                                            : 'border border-transparent text-zinc-600 hover:text-zinc-900',
-                                    )}
-                                >
-                                    {label}
-                                </button>
-                            ))}
-                        </div>
-
                         {canManage && (
                             <>
                                 <Button
@@ -449,21 +439,156 @@ export default function Dashboard({
                             </>
                         )}
 
-                        <span className="h-4 w-px bg-zinc-200" aria-hidden="true" />
+                        <span className="h-4 w-px bg-zinc-200 dark:bg-zinc-800" aria-hidden="true" />
 
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            title={`Signed in as ${auth.user?.email ?? ''}`}
-                            onClick={handleLogout}
-                        >
-                            <LogOut className="h-3.5 w-3.5" />
-                        </Button>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="secondary"
+                                    size="icon"
+                                    onClick={() =>
+                                        setDensity((prev) =>
+                                            prev === 'comfortable' ? 'compact' : 'comfortable',
+                                        )
+                                    }
+                                    aria-label="Toggle table row density"
+                                >
+                                    {density === 'comfortable' ? (
+                                        <Rows3 className="h-3.5 w-3.5" />
+                                    ) : (
+                                        <Rows2 className="h-3.5 w-3.5" />
+                                    )}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {density === 'comfortable'
+                                    ? 'Switch to compact density'
+                                    : 'Switch to comfortable density'}
+                            </TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="secondary"
+                                    size="icon"
+                                    onClick={toggleTheme}
+                                    aria-label={
+                                        theme === 'dark'
+                                            ? 'Switch to light mode'
+                                            : 'Switch to dark mode'
+                                    }
+                                >
+                                    {theme === 'dark' ? (
+                                        <Sun className="h-3.5 w-3.5" />
+                                    ) : (
+                                        <Moon className="h-3.5 w-3.5" />
+                                    )}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                            </TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleLogout}
+                                    aria-label="Sign out"
+                                >
+                                    <LogOut className="h-3.5 w-3.5" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Sign out ({auth.user?.email ?? ''})</TooltipContent>
+                        </Tooltip>
                     </div>
                 </header>
 
+                {/* Filter & Search Bar */}
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 bg-zinc-50/90 px-4 py-2 dark:border-zinc-800 dark:bg-zinc-950">
+                    <div className="relative w-full max-w-xs">
+                        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
+                        <Input
+                            ref={searchInputRef}
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Search instance, slug, or database... (/)"
+                            className="h-7 pl-8 pr-7 text-xs"
+                        />
+                        {search !== '' && (
+                            <button
+                                type="button"
+                                onClick={() => setSearch('')}
+                                aria-label="Clear search"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+                            >
+                                <X className="h-3 w-3" />
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="flex items-center rounded-md border border-zinc-200 bg-white p-0.5 text-[11px] dark:border-zinc-800 dark:bg-zinc-900">
+                        {(
+                            [
+                                { key: 'all', label: 'All', count: statusCounts.all, dot: null },
+                                {
+                                    key: 'online',
+                                    label: 'Online',
+                                    count: statusCounts.online,
+                                    dot: 'bg-emerald-500',
+                                },
+                                {
+                                    key: 'degraded',
+                                    label: 'Degraded',
+                                    count: statusCounts.degraded,
+                                    dot: 'bg-amber-500',
+                                },
+                                {
+                                    key: 'offline',
+                                    label: 'Offline',
+                                    count: statusCounts.offline,
+                                    dot: 'bg-rose-500',
+                                },
+                            ] as const
+                        ).map((pill) => (
+                            <button
+                                key={pill.key}
+                                type="button"
+                                onClick={() => setStatusFilter(pill.key)}
+                                className={cn(
+                                    'inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 font-medium tabular-nums transition-colors cursor-pointer',
+                                    statusFilter === pill.key
+                                        ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950'
+                                        : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100',
+                                )}
+                            >
+                                {pill.dot && (
+                                    <span
+                                        className={cn('h-1.5 w-1.5 rounded-full', pill.dot)}
+                                        aria-hidden="true"
+                                    />
+                                )}
+                                <span>{pill.label}</span>
+                                <span
+                                    className={cn(
+                                        'font-mono text-[10px]',
+                                        statusFilter === pill.key
+                                            ? 'opacity-80'
+                                            : 'text-zinc-400 dark:text-zinc-500',
+                                    )}
+                                >
+                                    {pill.count}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
                 {flash.success && (
-                    <div className="border-b border-zinc-200 bg-zinc-100/80 px-4 py-1 text-xs text-zinc-700">
+                    <div className="border-b border-zinc-200 bg-zinc-100/90 px-4 py-1.5 text-xs text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
                         {flash.success}
                     </div>
                 )}
@@ -473,6 +598,7 @@ export default function Dashboard({
                         rows={filteredAndSortedRows}
                         totalRegisteredCount={rows.length}
                         canManage={canManage}
+                        density={density}
                         sortKey={sortKey}
                         sortDirection={sortDirection}
                         onSort={handleSort}

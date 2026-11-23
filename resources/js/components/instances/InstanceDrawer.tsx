@@ -181,8 +181,8 @@ export function InstanceDrawer({ open, onOpenChange, instance }: InstanceDrawerP
 
                 <form id="instance-drawer-form" onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
                     <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4">
-                        <section className="space-y-3">
-                            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+                        <section className="space-y-3.5">
+                            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                                 Instance Details
                             </h3>
 
@@ -195,7 +195,9 @@ export function InstanceDrawer({ open, onOpenChange, instance }: InstanceDrawerP
                                     placeholder="Acme Pharma Nepal"
                                     required
                                 />
-                                {errors.name && <p className="text-[11px] text-rose-600">{errors.name}</p>}
+                                {errors.name && (
+                                    <p className="text-[11px] text-rose-600 dark:text-rose-400">{errors.name}</p>
+                                )}
                             </div>
 
                             <div className="space-y-1.5">
@@ -211,7 +213,9 @@ export function InstanceDrawer({ open, onOpenChange, instance }: InstanceDrawerP
                                     placeholder="acme-pharma-nepal"
                                     required
                                 />
-                                {errors.slug && <p className="text-[11px] text-rose-600">{errors.slug}</p>}
+                                {errors.slug && (
+                                    <p className="text-[11px] text-rose-600 dark:text-rose-400">{errors.slug}</p>
+                                )}
                             </div>
 
                             <div className="space-y-1.5">
@@ -225,7 +229,9 @@ export function InstanceDrawer({ open, onOpenChange, instance }: InstanceDrawerP
                                     placeholder="https://demo.fieldma.com"
                                     required
                                 />
-                                {errors.app_url && <p className="text-[11px] text-rose-600">{errors.app_url}</p>}
+                                {errors.app_url && (
+                                    <p className="text-[11px] text-rose-600 dark:text-rose-400">{errors.app_url}</p>
+                                )}
                             </div>
 
                             <div className="space-y-1.5">
@@ -239,7 +245,7 @@ export function InstanceDrawer({ open, onOpenChange, instance }: InstanceDrawerP
                                     required
                                 />
                                 {errors.db_database && (
-                                    <p className="text-[11px] text-rose-600">{errors.db_database}</p>
+                                    <p className="text-[11px] text-rose-600 dark:text-rose-400">{errors.db_database}</p>
                                 )}
                             </div>
                         </section>
@@ -248,10 +254,6 @@ export function InstanceDrawer({ open, onOpenChange, instance }: InstanceDrawerP
                         Scheduled Polling, Host / IP, Port, Username, Password, and Operational Notes
                         are intentionally commented out here and resolved automatically from .env
                         (FIELDMA_DEFAULT_*) on the backend.
-
-                        <section className="space-y-3 border-t border-zinc-200 pt-4">
-                            ... Active Toggle / DB Host / DB Port / DB User / DB Password / Notes ...
-                        </section>
                         */}
                     </div>
 
@@ -260,8 +262,8 @@ export function InstanceDrawer({ open, onOpenChange, instance }: InstanceDrawerP
                             className={cn(
                                 'mx-5 mb-3 rounded-md border px-3 py-2 text-xs',
                                 testResult.ok
-                                    ? 'border-zinc-200 bg-zinc-50 text-zinc-800'
-                                    : 'border-rose-200 bg-rose-50/60 text-rose-800',
+                                    ? 'border-zinc-200 bg-zinc-50 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200'
+                                    : 'border-rose-200 bg-rose-50/70 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200',
                             )}
                         >
                             {testResult.ok ? (
@@ -275,7 +277,7 @@ export function InstanceDrawer({ open, onOpenChange, instance }: InstanceDrawerP
                                         </span>
                                     </div>
                                     {testResult.missing_tables.length > 0 && (
-                                        <p className="pl-4 text-[11px] text-amber-700">
+                                        <p className="pl-4 text-[11px] text-amber-700 dark:text-amber-400">
                                             Missing expected tables ({testResult.missing_tables.length}):{' '}
                                             <span className="font-mono">{testResult.missing_tables.join(', ')}</span>
                                         </p>
@@ -287,11 +289,13 @@ export function InstanceDrawer({ open, onOpenChange, instance }: InstanceDrawerP
                                     <div>
                                         <span className="font-mono font-semibold">{testResult.error_code}</span>
                                         {testResult.latency_ms !== null && (
-                                            <span className="ml-1.5 font-mono text-rose-600 tabular-nums">
+                                            <span className="ml-1.5 font-mono text-rose-600 dark:text-rose-400 tabular-nums">
                                                 ({testResult.latency_ms} ms)
                                             </span>
                                         )}
-                                        <p className="mt-0.5 text-rose-700">{testResult.error_message}</p>
+                                        <p className="mt-0.5 text-rose-700 dark:text-rose-300">
+                                            {testResult.error_message}
+                                        </p>
                                     </div>
                                 </div>
                             )}

@@ -4,14 +4,17 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-    'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
+    'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 dark:focus-visible:ring-zinc-600 focus-visible:ring-offset-1 focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-950 disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
     {
         variants: {
             variant: {
-                default: 'bg-zinc-900 text-white hover:bg-zinc-800 border border-zinc-900',
-                secondary: 'bg-white text-zinc-800 border border-zinc-200 hover:bg-zinc-50 hover:border-zinc-300',
-                ghost: 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900',
-                destructive: 'bg-rose-600 text-white hover:bg-rose-700 border border-rose-600',
+                default:
+                    'bg-zinc-900 text-white hover:bg-zinc-800 border border-zinc-900 dark:bg-zinc-100 dark:text-zinc-950 dark:border-zinc-100 dark:hover:bg-white',
+                secondary:
+                    'bg-white text-zinc-800 border border-zinc-200 hover:bg-zinc-50 hover:border-zinc-300 dark:bg-zinc-900 dark:text-zinc-200 dark:border-zinc-800 dark:hover:bg-zinc-800 dark:hover:border-zinc-700',
+                ghost: 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100',
+                destructive:
+                    'bg-rose-600 text-white hover:bg-rose-700 border border-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 dark:border-rose-600',
             },
             size: {
                 default: 'h-8 px-3',

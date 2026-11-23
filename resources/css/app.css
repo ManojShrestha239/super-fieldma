@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
@@ -13,7 +15,7 @@
 
 @keyframes cell-flash {
     0% {
-        background-color: rgb(16 185 129 / 0.16);
+        background-color: rgb(16 185 129 / 0.18);
     }
     100% {
         background-color: transparent;
@@ -22,4 +24,14 @@
 
 .animate-cell-flash {
     animation: cell-flash 600ms ease-out;
+}
+
+/* Crisp, subtle scrollbars for high-density tables in light & dark modes */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(161 161 170 / 0.45) transparent;
+}
+
+.dark * {
+    scrollbar-color: rgb(82 82 91 / 0.7) transparent;
 }

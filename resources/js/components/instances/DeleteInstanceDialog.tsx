@@ -39,7 +39,8 @@ export function DeleteInstanceDialog({ instance, onClose }: DeleteInstanceDialog
             <AlertDialogContent>
                 <AlertDialogTitle>Delete {instance?.name}?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This permanently removes <span className="font-mono text-zinc-900">{instance?.slug}</span> from the
+                    This permanently removes{' '}
+                    <span className="font-mono text-zinc-900 dark:text-zinc-100">{instance?.slug}</span> from the
                     registry along with all stored daily snapshots. The remote FieldMA database itself is not modified.
                 </AlertDialogDescription>
                 <div className="mt-5 flex items-center justify-end gap-2">
