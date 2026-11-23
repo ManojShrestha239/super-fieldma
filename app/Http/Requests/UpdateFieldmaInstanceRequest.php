@@ -32,14 +32,14 @@ class UpdateFieldmaInstanceRequest extends FormRequest
                 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
                 Rule::unique('fieldma_instances', 'slug')->ignore($instance->id),
             ],
-            'app_url' => ['required', 'url:http,https', 'max:255'],
-            'db_ip' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9.\-:]+$/'],
-            'db_port' => ['required', 'integer', 'between:1,65535'],
+            'app_url' => ['sometimes', 'nullable', 'url:http,https', 'max:255'],
+            'db_ip' => ['sometimes', 'nullable', 'string', 'max:255', 'regex:/^[a-zA-Z0-9.\-:]+$/'],
+            'db_port' => ['sometimes', 'nullable', 'integer', 'between:1,65535'],
             'db_database' => ['required', 'string', 'max:128', 'regex:/^[a-zA-Z0-9_$-]+$/'],
-            'db_user' => ['required', 'string', 'max:128'],
+            'db_user' => ['sometimes', 'nullable', 'string', 'max:128'],
             'db_password' => ['nullable', 'string', 'max:255'],
-            'is_active' => ['required', 'boolean'],
-            'notes' => ['nullable', 'string', 'max:2000'],
+            'is_active' => ['sometimes', 'boolean'],
+            'notes' => ['sometimes', 'nullable', 'string', 'max:2000'],
         ];
     }
 

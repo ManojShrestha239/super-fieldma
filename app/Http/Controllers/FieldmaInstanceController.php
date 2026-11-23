@@ -37,8 +37,10 @@ class FieldmaInstanceController extends Controller
     {
         $validated = $request->validated();
 
-        if (! isset($validated['db_password']) || $validated['db_password'] === '') {
-            unset($validated['db_password']);
+        foreach (['app_url', 'db_ip', 'db_port', 'db_user', 'db_password'] as $field) {
+            if (! array_key_exists($field, $validated) || $validated[$field] === null || $validated[$field] === '') {
+                unset($validated[$field]);
+            }
         }
 
         $instance->update($validated);
@@ -72,38 +74,43 @@ class FieldmaInstanceController extends Controller
                 : (string) $instance->db_password;
 
             $credentials = new RemoteDbCredentials(
-                dbIp: (string) ($validated['db_ip'] ?? $instance->db_ip),
-                dbPort: (int) ($validated['db_port'] ?? $instance->db_port),
-                dbDatabase: (string) ($validated['db_database'] ?? $instance->db_database),
-                dbUser: (string) ($validated['db_user'] ?? $instance->db_user),
+                dbIp: $this->nonEmptyString($validated['db_ip'] ?? null, $instance->db_ip),
+                dbPort: isset($validated['db_port']) && $validated['db_port'] !== null
+                    ? (int) $validated['db_port']
+                    : $instance->db_port,
+                dbDatabase: $this->nonEmptyString($validated['db_database'] ?? null, $instance->db_database),
+                dbUser: $this->nonEmptyString($validated['db_user'] ?? null, $instance->db_user),
                 dbPassword: $dbPassword,
                 instanceId: $instance->id,
             );
         } else {
+            $dbDatabase = isset($validated['db_database']) ? trim((string) $validated['db_database']) : '';
+            if ($dbDatabase === '') {
+                return response()->json([
+                    'message' => 'Database Name is required before testing the connection.',
+                ], 422);
+            }
+
             $credentials = new RemoteDbCredentials(
-                dbIp: (string) $validated['db_ip'],
-                dbPort: (int) $validated['db_port'],
-                dbDatabase: (string) $validated['db_database'],
-                dbUser: (string) $validated['db_user'],
-                dbPassword: (string) $validated['db_password'],
+                dbIp: $this->nonEmptyString($validated['db_ip'] ?? null, (string) config('fieldma.default_db_host')),
+                dbPort: isset($validated['db_port']) && $validated['db_port'] !== null
+                    ? (int) $validated['db_port']
+                    : (int) config('fieldma.default_db_port'),
+                dbDatabase: $dbDatabase,
+                dbUser: $this->nonEmptyString($validated['db_user'] ?? null, (string) config('fieldma.default_db_user')),
+                dbPassword: $this->nonEmptyString($validated['db_password'] ?? null, (string) config('fieldma.default_db_password')),
                 instanceId: null,
             );
         }
 
         $result = $this->connector->testConnection($credentials);
 
-        if ($instance !== null && $request->keys() === []) {
-            $instance->forceFill([
-                'last_tested_at' => now(),
-                'last_test_ok' => $result->ok,
-                'last_latency_ms' => $result->latencyMs,
-            ])->save();
-        } elseif ($instance !== null) {
+        if ($instance !== null) {
             $unchangedConnection = ($credentials->dbIp === $instance->db_ip)
                 && ($credentials->dbPort === $instance->db_port)
                 && ($credentials->dbDatabase === $instance->db_database)
                 && ($credentials->dbUser === $instance->db_user)
-                && (! isset($validated['db_password']) || $validated['db_password'] === '');
+                && (! isset($validated['db_password']) || $validated['db_password'] === '' || $validated['db_password'] === null);
 
             if ($unchangedConnection) {
                 $instance->forceFill([
@@ -115,5 +122,14 @@ class FieldmaInstanceController extends Controller
         }
 
         return response()->json($result->toArray());
+    }
+
+    private function nonEmptyString(mixed $value, string $fallback): string
+    {
+        if (is_string($value) && trim($value) !== '') {
+            return trim($value);
+        }
+
+        return $fallback;
     }
 }
