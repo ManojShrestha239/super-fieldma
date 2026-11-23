@@ -40,6 +40,7 @@ interface DashboardProps {
     today: string;
     selectedDate: string;
     canManage: boolean;
+    backfillingCount: number;
     rows: DashboardRow[];
 }
 
@@ -80,6 +81,7 @@ export default function Dashboard({
     today,
     selectedDate,
     canManage,
+    backfillingCount,
     rows: initialRows,
 }: DashboardProps) {
     const { auth, flash } = usePage<SharedPageProps>().props;
@@ -263,7 +265,11 @@ export default function Dashboard({
         router.get(
             '/',
             nextDate === today ? {} : { date: nextDate },
-            { preserveState: true, preserveScroll: true, only: ['rows', 'selectedDate', 'today'] },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                only: ['rows', 'selectedDate', 'today', 'backfillingCount'],
+            },
         );
     }
 
@@ -407,9 +413,16 @@ export default function Dashboard({
                                     >
                                         Today
                                     </Button>
-                                    <span className="hidden rounded-sm border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] text-zinc-600 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300 xl:inline">
-                                        Historical · Live Paused
-                                    </span>
+                                    {backfillingCount > 0 && rows.some((r) => r.is_active && r.status === null) ? (
+                                        <span className="inline-flex items-center gap-1.5 rounded-sm border border-zinc-200 bg-zinc-100 px-2 py-0.5 font-mono text-[10px] text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
+                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                            Fetching {selectedDate}...
+                                        </span>
+                                    ) : (
+                                        <span className="hidden rounded-sm border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] text-zinc-600 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300 xl:inline">
+                                            Historical · Saved locally
+                                        </span>
+                                    )}
                                 </>
                             )}
                         </div>
@@ -419,19 +432,21 @@ export default function Dashboard({
                     <div className="flex items-center gap-2">
                         {canManage && (
                             <>
-                                <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    disabled={pollingAll}
-                                    onClick={handlePollAll}
-                                >
-                                    {pollingAll ? (
-                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                    ) : (
-                                        <RefreshCw className="h-3.5 w-3.5" />
-                                    )}
-                                    Poll All
-                                </Button>
+                                {!isHistorical && (
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        disabled={pollingAll}
+                                        onClick={handlePollAll}
+                                    >
+                                        {pollingAll ? (
+                                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        ) : (
+                                            <RefreshCw className="h-3.5 w-3.5" />
+                                        )}
+                                        Poll All
+                                    </Button>
+                                )}
                                 <Button size="sm" onClick={openCreateDrawer}>
                                     <Plus className="h-3.5 w-3.5" />
                                     Add Instance
@@ -598,6 +613,7 @@ export default function Dashboard({
                         rows={filteredAndSortedRows}
                         totalRegisteredCount={rows.length}
                         canManage={canManage}
+                        isHistorical={isHistorical}
                         density={density}
                         sortKey={sortKey}
                         sortDirection={sortDirection}

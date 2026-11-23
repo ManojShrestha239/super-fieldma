@@ -1,6 +1,8 @@
 import {
     ArrowDown,
     ArrowUp,
+    Database,
+    Download,
     ExternalLink,
     Loader2,
     Pencil,
@@ -159,6 +161,7 @@ interface MetricsTableProps {
     rows: DashboardRow[];
     totalRegisteredCount: number;
     canManage: boolean;
+    isHistorical: boolean;
     density: TableDensity;
     sortKey: SortKey;
     sortDirection: SortDirection;
@@ -185,6 +188,7 @@ export function MetricsTable({
     rows,
     totalRegisteredCount,
     canManage,
+    isHistorical,
     density,
     sortKey,
     sortDirection,
@@ -444,21 +448,58 @@ export function MetricsTable({
                                             </span>
 
                                             {canManage && (
-                                                <div className="flex items-center gap-0.5 border-l border-zinc-200 pl-1.5 opacity-60 transition-opacity group-hover:opacity-100 dark:border-zinc-800">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-6 w-6"
-                                                        title="Poll Now"
-                                                        disabled={isPolling}
-                                                        onClick={() => onPollInstance(row)}
-                                                    >
-                                                        {isPolling ? (
-                                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                                <div className="flex items-center gap-0.5 border-l border-zinc-200 pl-1.5 opacity-80 transition-opacity group-hover:opacity-100 dark:border-zinc-800">
+                                                    {isHistorical ? (
+                                                        row.status !== null && row.status !== 'offline' ? (
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <span className="inline-flex h-6 items-center gap-1 rounded-sm border border-zinc-200 bg-zinc-50 px-1.5 font-mono text-[10px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+                                                                        <Database className="h-2.5 w-2.5" />
+                                                                        Saved
+                                                                    </span>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    Saved in local database — no remote query needed.
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        ) : row.status === null && row.is_active ? (
+                                                            <span className="inline-flex h-6 items-center gap-1 rounded-sm border border-zinc-200 bg-zinc-50 px-1.5 font-mono text-[10px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+                                                                <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                                                                Loading
+                                                            </span>
                                                         ) : (
-                                                            <RefreshCw className="h-3 w-3" />
-                                                        )}
-                                                    </Button>
+                                                            <Button
+                                                                variant="secondary"
+                                                                size="sm"
+                                                                className="h-6 px-2 text-[10px]"
+                                                                title="Retry fetching this instance's data for the selected date"
+                                                                disabled={isPolling}
+                                                                onClick={() => onPollInstance(row)}
+                                                            >
+                                                                {isPolling ? (
+                                                                    <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                                                                ) : (
+                                                                    <Download className="h-2.5 w-2.5" />
+                                                                )}
+                                                                {isPolling ? 'Loading' : 'Retry'}
+                                                            </Button>
+                                                        )
+                                                    ) : (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-6 w-6"
+                                                            title="Poll Now"
+                                                            disabled={isPolling}
+                                                            onClick={() => onPollInstance(row)}
+                                                        >
+                                                            {isPolling ? (
+                                                                <Loader2 className="h-3 w-3 animate-spin" />
+                                                            ) : (
+                                                                <RefreshCw className="h-3 w-3" />
+                                                            )}
+                                                        </Button>
+                                                    )}
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"

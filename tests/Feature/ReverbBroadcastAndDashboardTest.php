@@ -154,4 +154,53 @@ class ReverbBroadcastAndDashboardTest extends TestCase
             );
         $this->assertStringNotContainsString('do-not-expose-me', $historicalResponse->getContent() ?: '');
     }
+
+    public function test_dashboard_auto_downloads_unsaved_past_date_once_and_serves_saved_dates_locally(): void
+    {
+        \Illuminate\Support\Facades\Queue::fake();
+
+        $admin = User::factory()->admin()->create();
+        $instance = FieldmaInstance::factory()->create(['is_active' => true]);
+        FieldmaInstance::factory()->inactive()->create();
+
+        $pastDate = now()->subDays(3)->toDateString();
+
+        // First visit to an unsaved past date auto-dispatches jobs only for active unsaved instances
+        $this->actingAs($admin)
+            ->get("/?date={$pastDate}")
+            ->assertOk()
+            ->assertInertia(fn (Assert $page): Assert => $page
+                ->where('selectedDate', $pastDate)
+                ->where('backfillingCount', 1)
+            );
+
+        \Illuminate\Support\Facades\Queue::assertPushed(
+            PollFieldmaInstanceJob::class,
+            fn (PollFieldmaInstanceJob $job): bool => $job->instanceId === $instance->id && $job->snapshotDate === $pastDate,
+        );
+        \Illuminate\Support\Facades\Queue::assertPushed(PollFieldmaInstanceJob::class, 1);
+
+        // Once saved in local DB, future visits never dispatch remote jobs again
+        FieldmaDailySnapshot::query()->create([
+            'fieldma_instance_id' => $instance->id,
+            'snapshot_date' => $pastDate,
+            'status' => InstanceStatus::Online,
+            'latency_ms' => 88,
+            'users_count' => 15,
+            'missing_tables' => [],
+            'polled_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->get("/?date={$pastDate}")
+            ->assertOk()
+            ->assertInertia(fn (Assert $page): Assert => $page->where('backfillingCount', 0));
+
+        $this->actingAs($admin)
+            ->postJson("/instances/{$instance->id}/poll", ['date' => $pastDate])
+            ->assertOk()
+            ->assertJson(['queued' => false, 'cached' => true, 'instance_id' => $instance->id]);
+
+        \Illuminate\Support\Facades\Queue::assertPushed(PollFieldmaInstanceJob::class, 1);
+    }
 }
