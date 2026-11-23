@@ -20,7 +20,7 @@ FLUSH PRIVILEGES;
 USE fieldma_alpha;
 
 CREATE TABLE mobileusers (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), fcm_id VARCHAR(255) NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-CREATE TABLE device_logs (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE device_logs (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, mobileuser_id BIGINT UNSIGNED NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE attendance_statuses (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, mobileuser_id BIGINT UNSIGNED NOT NULL, status VARCHAR(32) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE orders (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, total DECIMAL(12,2) DEFAULT 0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE visits (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, status VARCHAR(32) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
@@ -35,7 +35,7 @@ CREATE TABLE site_registration_v2_s (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY K
 CREATE TABLE notices (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, title VARCHAR(150), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 
 INSERT INTO mobileusers (name, fcm_id) VALUES ('Rep 1', 'fcm_a1'), ('Rep 2', 'fcm_a2'), ('Rep 3', NULL), ('Rep 4', 'fcm_a4');
-INSERT INTO device_logs (user_id) VALUES (1), (2), (2), (4);
+INSERT INTO device_logs (mobileuser_id) VALUES (1), (2), (2), (4);
 INSERT INTO attendance_statuses (mobileuser_id, status) VALUES (1, 'checkin'), (2, 'checkin'), (1, 'checkout');
 INSERT INTO orders (total) VALUES (1200.00), (4500.50), (890.00);
 INSERT INTO visits (status) VALUES ('online'), ('Online'), ('offline'), ('unlisted');
@@ -70,7 +70,7 @@ CREATE TABLE site_registration_v2_s LIKE fieldma_alpha.site_registration_v2_s;
 CREATE TABLE notices LIKE fieldma_alpha.notices;
 
 INSERT INTO mobileusers (name, fcm_id) VALUES ('B1','fb1'),('B2','fb2'),('B3','fb3'),('B4','fb4'),('B5','fb5'),('B6',NULL);
-INSERT INTO device_logs (user_id) VALUES (1),(2),(3),(4),(5);
+INSERT INTO device_logs (mobileuser_id) VALUES (1),(2),(3),(4),(5);
 INSERT INTO attendance_statuses (mobileuser_id, status) VALUES (1,'checkin'),(2,'checkin'),(3,'checkin'),(4,'checkin'),(1,'checkout'),(2,'checkout');
 INSERT INTO orders (total) VALUES (500),(600),(700),(800),(900),(1000);
 INSERT INTO visits (status) VALUES ('online'),('online'),('online'),('offline'),('offline'),('unlisted');

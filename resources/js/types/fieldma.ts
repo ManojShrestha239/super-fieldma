@@ -23,6 +23,24 @@ export interface SharedPageProps {
 
 export type InstanceStatus = 'online' | 'degraded' | 'offline';
 
+export interface FieldmaInstanceItem {
+    id: number;
+    name: string;
+    slug: string;
+    app_url: string;
+    db_ip: string;
+    db_port: number;
+    db_database: string;
+    db_user: string;
+    is_active: boolean;
+    notes: string | null;
+    last_tested_at: string | null;
+    last_test_ok: boolean | null;
+    last_latency_ms: number | null;
+    created_at: string | null;
+    updated_at: string | null;
+}
+
 export interface FieldmaMetrics {
     users_count: number | null;
     login_users_count: number | null;
